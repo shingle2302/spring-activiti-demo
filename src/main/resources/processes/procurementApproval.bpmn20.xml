@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn"
+             targetNamespace="http://www.activiti.org/test">
+
+    <process id="procurementApprovalProcess" name="Procurement Approval Process" isExecutable="true">
+
+        <!-- 开始事件 -->
+        <startEvent id="startEvent"/>
+
+        <!-- 提交采购申请 -->
+        <userTask id="submitApplication" name="Submit Procurement Application" activiti:assignee="applicant"/>
+
+        <!-- 直接主管审批 -->
+        <userTask id="directSupervisorApproval" name="Direct Supervisor Approval" activiti:assignee="directSupervisor"/>
+
+        <!-- 排他网关判断金额 -->
+        <exclusiveGateway id="amountDecisionGateway" name="Amount Decision Gateway"/>
+
+        <!-- 资源审批 -->
+        <userTask id="resourceApproval" name="Resource Approval" activiti:assignee="resourceApprover"/>
+
+        <!-- 资产管理员审批 -->
+        <userTask id="assetManagerApproval" name="Asset Manager Approval" activiti:assignee="assetManager"/>
+
+        <!-- 部门主管审批 -->
+        <userTask id="departmentHeadApproval" name="Department Head Approval" activiti:assignee="departmentHead"/>
+
+        <!-- 总经理审批 -->
+        <userTask id="ceoApproval" name="CEO Approval" activiti:assignee="ceo"/>
+
+        <!-- 结束事件 -->
+        <endEvent id="endEvent"/>
+
+        <!-- 流程连线 -->
+        <sequenceFlow sourceRef="startEvent" targetRef="submitApplication"/>
+        <sequenceFlow sourceRef="submitApplication" targetRef="directSupervisorApproval"/>
+        <sequenceFlow sourceRef="directSupervisorApproval" targetRef="amountDecisionGateway"/>
+
+        <!-- 条件分支 -->
+        <sequenceFlow sourceRef="amountDecisionGateway" targetRef="resourceApproval">
+            <conditionExpression xsi:type="tFormalExpression">
+
+                <![CDATA[ ${amount > 2000}]]>
+
+            </conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow sourceRef="amountDecisionGateway" targetRef="assetManagerApproval">
+            <conditionExpression xsi:type="tFormalExpression">
+
+                <![CDATA[ ${amount >= 1000000}]]>
+
+            </conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow sourceRef="amountDecisionGateway" targetRef="departmentHeadApproval">
+            <conditionExpression xsi:type="tFormalExpression">
+
+                <![CDATA[${amount >= 1000000 && amount < 3000000}]]>
+            </conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow sourceRef="amountDecisionGateway" targetRef="ceoApproval">
+            <conditionExpression xsi:type="tFormalExpression">
+                ${amount >= 3000000}
+            </conditionExpression>
+        </sequenceFlow>
+
+        <!-- 各任务连接到结束 -->
+        <sequenceFlow sourceRef="resourceApproval" targetRef="endEvent"/>
+        <sequenceFlow sourceRef="assetManagerApproval" targetRef="endEvent"/>
+        <sequenceFlow sourceRef="departmentHeadApproval" targetRef="endEvent"/>
+        <sequenceFlow sourceRef="ceoApproval" targetRef="endEvent"/>
+
+    </process>
+
+</definitions>
